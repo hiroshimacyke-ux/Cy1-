@@ -1,3 +1,249 @@
+Pixel, f.ZIndex = Color3.fromRGB(255,0,0), 2, 1000
+		Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
+
+		local t = Instance.new("TextLabel", f)
+		t.Size, t.Position = UDim2.new(1,-20,0,40), UDim2.new(0,10,0,10)
+		t.BackgroundTransparency, t.Text, t.TextSize = 1, msg, 14
+		t.TextColor3, t.Font, t.ZIndex = Color3.new(1,1,1), Enum.Font.GothamSemibold, 1001
+		t.TextWrapped = true
+
+		local function createBtn(text, pos, color, cb)
+			local b = Instance.new("TextButton", f)
+			b.Size, b.Position = UDim2.new(0.4,-5,0,30), pos
+			b.Text, b.BackgroundColor3, b.TextColor3 = text, color, Color3.new(1,1,1)
+			b.Font, b.TextSize, b.ZIndex = Enum.Font.GothamSemibold, 14, 1001
+			Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+			b.MouseButton1Click:Connect(cb)
+		end
+
+		createBtn("Yes", UDim2.new(0.05,0,1,-40), Color3.fromRGB(0,170,0), function() f:Destroy() callback() end)
+		createBtn("No", UDim2.new(0.55,0,1,-40), Color3.fromRGB(170,0,0), function() f:Destroy() end)
+	end
+
+	-- main frame
+	local MainFrame = Instance.new("Frame", ScreenGui)
+	MainFrame.Size, MainFrame.Position = UDim2.new(0,240,0,180), UDim2.new(1,-250,0,-30)
+	MainFrame.BackgroundColor3, MainFrame.BackgroundTransparency = Color3.fromRGB(25,25,25), 0.3
+	MainFrame.BorderColor3, MainFrame.BorderSizePixel = Color3.fromRGB(255,0,0), 2
+	Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
+
+	-- Title bar
+	local TitleBar = Instance.new("TextLabel", MainFrame)
+	TitleBar.Size, TitleBar.Position = UDim2.new(1,-60,0,30), UDim2.new(0,0,0,0)
+	TitleBar.Text, TitleBar.TextSize, TitleBar.TextColor3 = "💢 CY1 GUI", 16, Color3.new(1,1,1)
+	TitleBar.Font, TitleBar.TextXAlignment = Enum.Font.GothamSemibold, Enum.TextXAlignment.Left
+	TitleBar.BackgroundColor3, TitleBar.BackgroundTransparency = Color3.fromRGB(35,35,35), 0.3
+	TitleBar.BorderColor3, TitleBar.BorderSizePixel = Color3.fromRGB(255,0,0), 1
+	Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 8)
+
+	-- top tab buttons container (keeps them always visible)
+	local TabContainer = Instance.new("Frame", MainFrame)
+	TabContainer.Size, TabContainer.Position = UDim2.new(1,-10,0,30), UDim2.new(0,5,0,30)
+	TabContainer.BackgroundTransparency = 1
+
+	local function makeSmallBtn(text, pos)
+		local b = Instance.new("TextButton", TabContainer)
+		b.Size, b.Position = UDim2.new(0.48,0,1,0), pos
+		b.Text, b.Font, b.TextSize = text, Enum.Font.GothamSemibold, 14
+		b.TextColor3 = Color3.new(1,1,1)
+		b.BackgroundColor3 = Color3.fromRGB(35,35,35)
+		b.BorderColor3, b.BorderSizePixel = Color3.fromRGB(255,0,0), 1
+		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+		return b
+	end
+
+	local TabBtn1 = makeSmallBtn("Tools", UDim2.new(0,0,0,0))
+	local TabBtn2 = makeSmallBtn("Scripts", UDim2.new(0.52,0,0,0))
+
+	-- min & close buttons on title (keeps same positions)
+	local function makeIconBtn(icon, pos, callback)
+		local b = Instance.new("TextButton", MainFrame)
+		b.Size, b.Position, b.Text = UDim2.new(0,30,0,30), pos, icon
+		b.Font, b.TextSize, b.TextColor3 = Enum.Font.GothamSemibold, 18, Color3.new(1,1,1)
+		b.BackgroundColor3, b.BackgroundTransparency = Color3.fromRGB(35,35,35), 0.3
+		b.BorderColor3, b.BorderSizePixel = Color3.fromRGB(255,0,0), 1
+		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
+		if callback then b.MouseButton1Click:Connect(callback) end
+		return b
+	end
+
+	local MinimizeButton = makeIconBtn("🔵", UDim2.new(1,-60,0,0), nil)
+	local CloseButton = makeIconBtn("🔴", UDim2.new(1,-30,0,0), function()
+		showConfirmation("Are you sure you want to close it?", function() ScreenGui:Destroy() end)
+	end)
+
+	-- content container (holds two pages)
+	local ContentContainer = Instance.new("Frame", MainFrame)
+	ContentContainer.Size, ContentContainer.Position = UDim2.new(1,0,1,-60), UDim2.new(0,0,0,60)
+	ContentContainer.BackgroundTransparency = 1
+
+	-- function to create a scroll page
+	local function createScrollPage()
+		local page = Instance.new("ScrollingFrame", ContentContainer)
+		page.Size = UDim2.new(1, 0, 1, 0)
+		page.BackgroundTransparency = 1
+		page.ScrollBarThickness = 6
+		page.CanvasSize = UDim2.new(0,0,0,0)
+
+		local layout = Instance.new("UIListLayout", page)
+		layout.Padding = UDim.new(0, 8)
+		layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+		local padding = Instance.new("UIPadding", page)
+		padding.PaddingTop = UDim.new(0, 10)
+		-- update canvas size automatically
+		layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+			page.CanvasSize = UDim2.new(0,0,0, layout.AbsoluteContentSize.Y + 12)
+		end)
+		return page
+	end
+
+	local PageTools = createScrollPage()     -- Server & Player Tools
+	local PageScripts = createScrollPage()   -- Scripts & Fun
+
+	-- helper to create style-consistent red buttons (returns the button)
+	local function createRedButton(parent, name, text, callback)
+		local b = Instance.new("TextButton", parent)
+		b.Name, b.Text = name, text
+		b.Size = UDim2.new(1, -10, 0, 24)
+		b.BackgroundColor3 = Color3.fromRGB(200,50,50)
+		b.BackgroundTransparency = 0.3
+		b.TextColor3, b.Font, b.TextSize = Color3.new(1,1,1), Enum.Font.GothamSemibold, 13
+		b.BorderSizePixel, b.BorderColor3 = 3, Color3.fromRGB(255,0,0)
+		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+		if callback then b.MouseButton1Click:Connect(callback) end
+		return b
+	end
+
+	-- Populate PageTools
+	createRedButton(PageTools, "ServerHop", "Server Hop 🔁", function()
+		showConfirmation("Hop to another server?", function()
+			local HttpService = game:GetService("HttpService")
+			local data = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
+			for _,s in pairs(data.data or {}) do
+				if s.id ~= game.JobId and s.playing < s.maxPlayers then
+					TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id, player) return
+				end
+			end
+		end)
+	end)
+
+	createRedButton(PageTools, "RejoinButton", "Rejoin Server ⏳", function()
+		showConfirmation("Rejoin this server?", function()
+			TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+		end)
+	end)
+
+	createRedButton(PageTools, "IYButton", "Run Infinite Yield 💻", function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+	end)
+
+	createRedButton(PageTools, "TpToolButton", "TP Tool 🧭", function()
+		local tool = Instance.new("Tool", player.Backpack)
+		tool.RequiresHandle, tool.Name = false, "Tp tool (Equip to Click TP)"
+		tool.Activated:Connect(function()
+			local pos = mouse.Hit + Vector3.new(0,2.5,0)
+			if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+				player.Character.HumanoidRootPart.CFrame = CFrame.new(pos.X, pos.Y, pos.Z)
+			end
+		end)
+	end)
+
+	-- Populate PageScripts
+	createRedButton(PageScripts, "BringFling", "NDS - Black Hole 🧲", function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/BringFlingPlayers"))()
+	end)
+
+	createRedButton(PageScripts, "DisasterButton", "NDS - Disaster Detector 🌧️", function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/EnesXVC/NaturalDisasterSurvival/main/Detect-Disasters"))()
+	end)
+
+	createRedButton(PageScripts, "NatHubButton", "Grow a garden 🌱", function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/greywaterstill/GAG/refs/heads/main/nathub.lua"))()
+	end)
+
+	createRedButton(PageScripts, "DandysWorldButton", "Dandy's World 🎭", function()
+		loadstring(game:HttpGet("https://rawscripts.net/raw/Dandy's-World-ALPHA-OP-Script-I-Reuploading-19052"))()
+	end)
+
+	-- Tab switching (fade animation)
+	local function showPage(pageToShow)
+		for _, child in ipairs(ContentContainer:GetChildren()) do
+			if child:IsA("ScrollingFrame") then
+				if child == pageToShow then
+					child.Visible = true
+					child.BackgroundTransparency = 1
+					TweenService:Create(child, TweenInfo.new(0.18), {BackgroundTransparency = 1}):Play()
+				else
+					child.Visible = false
+				end
+			end
+		end
+		-- style active tab
+		TabBtn1.BackgroundColor3 = (pageToShow == PageTools) and Color3.fromRGB(55,55,55) or Color3.fromRGB(35,35,35)
+		TabBtn2.BackgroundColor3 = (pageToShow == PageScripts) and Color3.fromRGB(55,55,55) or Color3.fromRGB(35,35,35)
+	end
+
+	-- initial state: show tools
+	PageScripts.Visible = false
+	PageTools.Visible = true
+	showPage(PageTools)
+
+	TabBtn1.MouseButton1Click:Connect(function() showPage(PageTools) end)
+	TabBtn2.MouseButton1Click:Connect(function() showPage(PageScripts) end)
+
+-- Minimize logic (keeps original sizes)
+local minimized, originalSize, minimizedSize = false, UDim2.new(0,240,0,210), UDim2.new(0,240,0,30)
+local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+MinimizeButton.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    TweenService:Create(MainFrame, tweenInfo, {Size = minimized and minimizedSize or originalSize}):Play()
+
+    if minimized then 
+        ContentContainer.Visible = false
+        TabContainer.Visible = false -- hides the Tools/Scripts tabs
+        MinimizeButton.Text = "⚫"
+    else 
+        task.delay(0.25, function()
+            ContentContainer.Visible = true
+            TabContainer.Visible = true -- shows them again
+        end)
+        MinimizeButton.Text = "🔵"
+    end
+end)
+
+-- Page switching
+local function showPage(pageName)
+    for _, child in ipairs(ContentContainer:GetChildren()) do
+        if child:IsA("ScrollingFrame") then
+            child.Visible = (child.Name == pageName)
+
+            if child.Visible then
+                local layout = child:FindFirstChildOfClass("UIListLayout")
+                if layout then
+                    child.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 12)
+                end
+            end
+        end
+    end
+end
+
+ScriptsTab.MouseButton1Click:Connect(function()
+    showPage("Scripts")
+end)
+
+ToolsTab.MouseButton1Click:Connect(function()
+    showPage("Tools")
+end)
+
+-- Default page
+showPage("Scripts")
+
+end)
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local TweenService = game:GetService("TweenService")
@@ -227,6 +473,10 @@ task.delay(5, function()
 	createRedButton(PageScripts, "DandysWorldButton", "Dandy's World 🎭", function()
 		loadstring(game:HttpGet("https://rawscripts.net/raw/Dandy's-World-ALPHA-OP-Script-I-Reuploading-19052"))()
 	end)
+
+createRedButton(PageScripts, "PhantasmTSB", "The strongest 👊", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ATrainz/Phantasm/refs/heads/main/Games/TSB.lua"))()
+end)
 
 	-- Tab switching (fade animation)
 	local function showPage(pageToShow)
