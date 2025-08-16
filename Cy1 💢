@@ -216,7 +216,7 @@ task.delay(5, function()
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/BringFlingPlayers"))()
 	end)
 
-	createRedButton(PageScripts, "DisasterButton", "NDS - Disaster Detector 🌧️", function()
+	createRedButton(PageScripts, "DisasterButton", "NDS - Disaster alert 🌧️", function()
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/EnesXVC/NaturalDisasterSurvival/main/Detect-Disasters"))()
 	end)
 
