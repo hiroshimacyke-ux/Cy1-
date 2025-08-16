@@ -190,13 +190,13 @@ task.delay(5, function()
 		end)
 	end)
 
-	createRedButton(PageTools, "RejoinButton", "Rejoin Server ⏳", function()
+	createRedButton(PageTools, "RejoinButton", "Rejoin Server 🔄", function()
 		showConfirmation("Rejoin this server?", function()
 			TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
 		end)
 	end)
 
-	createRedButton(PageTools, "IYButton", "Run Infinite Yield 💻", function()
+	createRedButton(PageTools, "IYButton", "Infinite Yield 💻", function()
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
 	end)
 
@@ -212,7 +212,7 @@ task.delay(5, function()
 	end)
 
 	-- Populate PageScripts
-	createRedButton(PageScripts, "BringFling", "NDS - Black Hole 🧲", function()
+	createRedButton(PageScripts, "BringFling", "NDS - Black Hole 🌑", function()
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/BringFlingPlayers"))()
 	end)
 
@@ -230,10 +230,6 @@ task.delay(5, function()
 
 createRedButton(PageScripts, "PhantasmTSB", "The strongest 👊", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ATrainz/Phantasm/refs/heads/main/Games/TSB.lua"))()
-end)
-
-createRedButton(PageScripts, "InvFlightR15", "Invincible Flight (R15) ✈️", function()
-    loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Invinicible-Flight-R15-45414"))()
 end)
 
 	-- Tab switching (fade animation)
