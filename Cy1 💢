@@ -84,7 +84,7 @@ task.delay(5, function()
 
 	-- main frame
 	local MainFrame = Instance.new("Frame", ScreenGui)
-	MainFrame.Size, MainFrame.Position = UDim2.new(0,240,0,180), UDim2.new(1,-250,0,-30)
+	MainFrame.Size, MainFrame.Position = UDim2.new(0,260,0,180), UDim2.new(1,-260,0,-30)
 	MainFrame.BackgroundColor3, MainFrame.BackgroundTransparency = Color3.fromRGB(25,25,25), 0.3
 	MainFrame.BorderColor3, MainFrame.BorderSizePixel = Color3.fromRGB(255,0,0), 2
 	Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
@@ -144,7 +144,7 @@ task.delay(5, function()
 		local page = Instance.new("ScrollingFrame", ContentContainer)
 		page.Size = UDim2.new(1, 0, 1, 0)
 		page.BackgroundTransparency = 1
-		page.ScrollBarThickness = 6
+		page.ScrollBarThickness = 1
 		page.CanvasSize = UDim2.new(0,0,0,0)
 
 		local layout = Instance.new("UIListLayout", page)
@@ -259,7 +259,7 @@ end)
 	TabBtn2.MouseButton1Click:Connect(function() showPage(PageScripts) end)
 
 -- Minimize logic (keeps original sizes)
-local minimized, originalSize, minimizedSize = false, UDim2.new(0,240,0,210), UDim2.new(0,240,0,30)
+local minimized, originalSize, minimizedSize = false, UDim2.new(0,260,0,180), UDim2.new(0,250,0,30)
 local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
 MainFrame.Active = true
@@ -309,4 +309,4 @@ end)
 -- Default page
 showPage("Scripts")
 
-end)
+end) 
