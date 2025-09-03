@@ -1,10 +1,13 @@
+-- ✅ Prevent duplicates when auto-executed
+if getgenv().CY1_GUI_LOADED then return end
+getgenv().CY1_GUI_LOADED = true
+
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local TweenService = game:GetService("TweenService")
-local UIS = game:GetService("UserInputService")
 local player, mouse = Players.LocalPlayer, Players.LocalPlayer:GetMouse()
 
--- █ Welcome / Loader (greets player by username)
+-- █ Loader Screen
 local LoadingGui = Instance.new("ScreenGui")
 LoadingGui.Name = "LoadingScreen"
 LoadingGui.ResetOnSpawn = false
@@ -34,14 +37,14 @@ TweenService:Create(LoadingText, TweenInfo.new(0.8), {TextTransparency = 0}):Pla
 -- animated dots
 task.spawn(function()
 	local dots = ""
-	while LoadingGui and LoadingGui.Parent do
+	while LoadingGui.Parent do
 		dots = dots == "..." and "" or dots .. "."
 		LoadingText.Text = "💢 Welcome, " .. player.Name .. dots
 		task.wait(0.5)
 	end
 end)
 
--- fade out after 5s and show main
+-- fade out after 5s
 task.delay(5, function()
 	local fadeFrame = TweenService:Create(LoadingFrame, TweenInfo.new(0.6), {BackgroundTransparency = 1})
 	local fadeText = TweenService:Create(LoadingText, TweenInfo.new(0.6), {TextTransparency = 1})
@@ -50,13 +53,12 @@ task.delay(5, function()
 	LoadingGui:Destroy()
 end)
 
--- █ Main GUI (appears after loader delay)
+-- █ Main GUI
 task.delay(5, function()
-
 	local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 	ScreenGui.Name, ScreenGui.ResetOnSpawn = "CYL1_GUI", false
 
-	-- confirmation popup helper (keeps original style)
+	-- confirmation popup
 	local function showConfirmation(msg, callback)
 		local f = Instance.new("Frame", ScreenGui)
 		f.Size, f.Position, f.BackgroundColor3 = UDim2.new(0,180,0,100), UDim2.new(0.5,-90,0.5,-50), Color3.fromRGB(30,30,30)
@@ -89,7 +91,7 @@ task.delay(5, function()
 	MainFrame.BorderColor3, MainFrame.BorderSizePixel = Color3.fromRGB(255,0,0), 2
 	Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
-	-- Title bar
+	-- title bar
 	local TitleBar = Instance.new("TextLabel", MainFrame)
 	TitleBar.Size, TitleBar.Position = UDim2.new(1,-60,0,30), UDim2.new(0,0,0,0)
 	TitleBar.Text, TitleBar.TextSize, TitleBar.TextColor3 = "💢 CY1 GUI", 16, Color3.new(1,1,1)
@@ -98,7 +100,7 @@ task.delay(5, function()
 	TitleBar.BorderColor3, TitleBar.BorderSizePixel = Color3.fromRGB(255,0,0), 1
 	Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 8)
 
-	-- top tab buttons container (keeps them always visible)
+	-- tabs
 	local TabContainer = Instance.new("Frame", MainFrame)
 	TabContainer.Size, TabContainer.Position = UDim2.new(1,-10,0,30), UDim2.new(0,5,0,30)
 	TabContainer.BackgroundTransparency = 1
@@ -117,7 +119,7 @@ task.delay(5, function()
 	local TabBtn1 = makeSmallBtn("Tools", UDim2.new(0,0,0,0))
 	local TabBtn2 = makeSmallBtn("Scripts", UDim2.new(0.52,0,0,0))
 
-	-- min & close buttons on title (keeps same positions)
+	-- minimize & close
 	local function makeIconBtn(icon, pos, callback)
 		local b = Instance.new("TextButton", MainFrame)
 		b.Size, b.Position, b.Text = UDim2.new(0,30,0,30), pos, icon
@@ -129,19 +131,19 @@ task.delay(5, function()
 		return b
 	end
 
-	local MinimizeButton = makeIconBtn("🔵", UDim2.new(1,-60,0,0), nil)
+	local MinimizeButton = makeIconBtn("🔵", UDim2.new(1,-60,0,0))
 	local CloseButton = makeIconBtn("🔴", UDim2.new(1,-30,0,0), function()
 		showConfirmation("Are you sure you want to close it?", function() ScreenGui:Destroy() end)
 	end)
 
-	-- content container (holds two pages)
+	-- content container
 	local ContentContainer = Instance.new("Frame", MainFrame)
 	ContentContainer.Size, ContentContainer.Position = UDim2.new(1,0,1,-60), UDim2.new(0,0,0,60)
 	ContentContainer.BackgroundTransparency = 1
 
-	-- function to create a scroll page
-	local function createScrollPage()
+	local function createScrollPage(name)
 		local page = Instance.new("ScrollingFrame", ContentContainer)
+		page.Name = name
 		page.Size = UDim2.new(1, 0, 1, 0)
 		page.BackgroundTransparency = 1
 		page.ScrollBarThickness = 1
@@ -153,17 +155,18 @@ task.delay(5, function()
 
 		local padding = Instance.new("UIPadding", page)
 		padding.PaddingTop = UDim.new(0, 10)
-		-- update canvas size automatically
+
 		layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 			page.CanvasSize = UDim2.new(0,0,0, layout.AbsoluteContentSize.Y + 12)
 		end)
+
 		return page
 	end
 
-	local PageTools = createScrollPage()     -- Server & Player Tools
-	local PageScripts = createScrollPage()   -- Scripts & Fun
+	local PageTools = createScrollPage("Tools")
+	local PageScripts = createScrollPage("Scripts")
 
-	-- helper to create style-consistent red buttons (returns the button)
+	-- button helper
 	local function createRedButton(parent, name, text, callback)
 		local b = Instance.new("TextButton", parent)
 		b.Name, b.Text = name, text
@@ -177,7 +180,7 @@ task.delay(5, function()
 		return b
 	end
 
-	-- Populate PageTools
+	-- populate PageTools
 	createRedButton(PageTools, "ServerHop", "Server Hop 🔁", function()
 		showConfirmation("Hop to another server?", function()
 			local HttpService = game:GetService("HttpService")
@@ -211,7 +214,7 @@ task.delay(5, function()
 		end)
 	end)
 
-	-- Populate PageScripts
+	-- populate PageScripts
 	createRedButton(PageScripts, "BringFling", "NDS - Black Hole 🌑", function()
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/BringFlingPlayers"))()
 	end)
@@ -221,47 +224,37 @@ task.delay(5, function()
 	end)
 
 	createRedButton(PageScripts, "GameLoaderButton", "Grow a garden 🌱", function()
-    repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer
-
-    local scripts = {
-        [126884695634066] = "https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/Garden/Garden-V1.lua",
-        [81440632616906]  = "https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/DigEarth/V1.lua",
-    }
-
-    local url = scripts[game.PlaceId]
-    if url then
-        loadstring(game:HttpGetAsync(url))()
-        loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/untitled.lua"))()
-    end
-end)
+		repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer
+		local scripts = {
+			[126884695634066] = "https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/Garden/Garden-V1.lua",
+			[81440632616906]  = "https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/DigEarth/V1.lua",
+		}
+		local url = scripts[game.PlaceId]
+		if url then
+			loadstring(game:HttpGetAsync(url))()
+			loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/untitled.lua"))()
+		end
+	end)
 
 	createRedButton(PageScripts, "DandysWorldButton", "Dandy's World 🎭", function()
 		loadstring(game:HttpGet("https://rawscripts.net/raw/Dandy's-World-ALPHA-OP-Script-I-Reuploading-19052"))()
 	end)
 
-createRedButton(PageScripts, "PhantasmTSB", "The strongest 👊", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ATrainz/Phantasm/refs/heads/main/Games/TSB.lua"))()
-end)
+	createRedButton(PageScripts, "PhantasmTSB", "The strongest 👊", function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/ATrainz/Phantasm/refs/heads/main/Games/TSB.lua"))()
+	end)
 
-	-- Tab switching (fade animation)
+	-- tab switching
 	local function showPage(pageToShow)
 		for _, child in ipairs(ContentContainer:GetChildren()) do
 			if child:IsA("ScrollingFrame") then
-				if child == pageToShow then
-					child.Visible = true
-					child.BackgroundTransparency = 1
-					TweenService:Create(child, TweenInfo.new(0.18), {BackgroundTransparency = 1}):Play()
-				else
-					child.Visible = false
-				end
+				child.Visible = (child == pageToShow)
 			end
 		end
-		-- style active tab
 		TabBtn1.BackgroundColor3 = (pageToShow == PageTools) and Color3.fromRGB(55,55,55) or Color3.fromRGB(35,35,35)
 		TabBtn2.BackgroundColor3 = (pageToShow == PageScripts) and Color3.fromRGB(55,55,55) or Color3.fromRGB(35,35,35)
 	end
 
-	-- initial state: show tools
 	PageScripts.Visible = false
 	PageTools.Visible = true
 	showPage(PageTools)
@@ -269,55 +262,27 @@ end)
 	TabBtn1.MouseButton1Click:Connect(function() showPage(PageTools) end)
 	TabBtn2.MouseButton1Click:Connect(function() showPage(PageScripts) end)
 
--- Minimize logic (keeps original sizes)
-local minimized, originalSize, minimizedSize = false, UDim2.new(0,260,0,180), UDim2.new(0,250,0,30)
-local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	-- minimize logic
+	local minimized, originalSize, minimizedSize = false, UDim2.new(0,260,0,180), UDim2.new(0,250,0,30)
+	local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
-MainFrame.Active = true
-MainFrame.Draggable = true
+	MainFrame.Active = true
+	MainFrame.Draggable = true
 
-MinimizeButton.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    TweenService:Create(MainFrame, tweenInfo, {Size = minimized and minimizedSize or originalSize}):Play()
+	MinimizeButton.MouseButton1Click:Connect(function()
+		minimized = not minimized
+		TweenService:Create(MainFrame, tweenInfo, {Size = minimized and minimizedSize or originalSize}):Play()
 
-    if minimized then 
-        ContentContainer.Visible = false
-        TabContainer.Visible = false -- hides the Tools/Scripts tabs
-        MinimizeButton.Text = "⚫"
-    else 
-        task.delay(0.25, function()
-            ContentContainer.Visible = true
-            TabContainer.Visible = true -- shows them again
-        end)
-        MinimizeButton.Text = "🔵"
-    end
+		if minimized then 
+			ContentContainer.Visible = false
+			TabContainer.Visible = false
+			MinimizeButton.Text = "⚫"
+		else 
+			task.delay(0.25, function()
+				ContentContainer.Visible = true
+				TabContainer.Visible = true
+			end)
+			MinimizeButton.Text = "🔵"
+		end
+	end)
 end)
-
--- Page switching
-local function showPage(pageName)
-    for _, child in ipairs(ContentContainer:GetChildren()) do
-        if child:IsA("ScrollingFrame") then
-            child.Visible = (child.Name == pageName)
-
-            if child.Visible then
-                local layout = child:FindFirstChildOfClass("UIListLayout")
-                if layout then
-                    child.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 12)
-                end
-            end
-        end
-    end
-end
-
-ScriptsTab.MouseButton1Click:Connect(function()
-    showPage("Scripts")
-end)
-
-ToolsTab.MouseButton1Click:Connect(function()
-    showPage("Tools")
-end)
-
--- Default page
-showPage("Scripts")
-
-end) 
