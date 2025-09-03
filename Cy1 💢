@@ -56,7 +56,7 @@ end)
 -- █ Main GUI
 task.delay(5, function()
 	local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-	ScreenGui.Name, ScreenGui.ResetOnSpawn = "CYL1_GUI", false
+	ScreenGui.Name, ScreenGui.ResetOnSpawn = "CY1_GUI", false
 
 	-- confirmation popup
 	local function showConfirmation(msg, callback)
@@ -234,10 +234,6 @@ task.delay(5, function()
 			loadstring(game:HttpGetAsync(url))()
 			loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/untitled.lua"))()
 		end
-	end)
-
-	createRedButton(PageScripts, "DandysWorldButton", "Dandy's World 🎭", function()
-		loadstring(game:HttpGet("https://rawscripts.net/raw/Dandy's-World-ALPHA-OP-Script-I-Reuploading-19052"))()
 	end)
 
 	createRedButton(PageScripts, "PhantasmTSB", "The strongest 👊", function()
