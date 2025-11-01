@@ -7,20 +7,22 @@ local TeleportService = game:GetService("TeleportService")
 local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
+local PlayerGui = player:WaitForChild("PlayerGui")
 
--- Fade-in helper
-local function FadeIn(object)
-	object.BackgroundTransparency = 1
-	local tween = TweenService:Create(object, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0.35})
+-- Fade-in helper for frames (background transparency target)
+local function FadeInFrame(frame, targetTransparency)
+	targetTransparency = targetTransparency or 0.35
+	frame.BackgroundTransparency = 1
+	local tween = TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = targetTransparency})
 	tween:Play()
 end
 
--- Function to create GUI
+-- Main GUI creation function
 local function CreateMainGUI()
 	local ScreenGui = Instance.new("ScreenGui")
 	ScreenGui.Name = "CY1_GUI"
 	ScreenGui.ResetOnSpawn = false
-	ScreenGui.Parent = player:WaitForChild("PlayerGui")
+	ScreenGui.Parent = PlayerGui
 
 	-- Main frame
 	local MainFrame = Instance.new("Frame", ScreenGui)
@@ -34,11 +36,13 @@ local function CreateMainGUI()
 	MainFrame.Draggable = true
 	Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
-	FadeIn(MainFrame)
+	-- Fade in nicely
+	FadeInFrame(MainFrame, 0.35)
 
 	-- Title bar
 	local TitleBar = Instance.new("TextLabel", MainFrame)
 	TitleBar.Size = UDim2.new(1, 0, 0, 30)
+	TitleBar.Position = UDim2.new(0,0,0,0)
 	TitleBar.Text = "💢 CY1 GUI"
 	TitleBar.Font = Enum.Font.GothamSemibold
 	TitleBar.TextSize = 16
@@ -126,11 +130,15 @@ local function CreateMainGUI()
 	-- Tools
 	createButton(PageTools, "Server Hop 🔁", function()
 		local HttpService = game:GetService("HttpService")
-		local data = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
-		for _, s in pairs(data.data or {}) do
-			if s.id ~= game.JobId and s.playing < s.maxPlayers then
-				TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id, player)
-				return
+		local ok, data = pcall(function()
+			return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+		end)
+		if ok and data then
+			for _, s in pairs(data.data or {}) do
+				if s.id ~= game.JobId and s.playing < s.maxPlayers then
+					TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id, player)
+					return
+				end
 			end
 		end
 	end)
@@ -180,10 +188,16 @@ local function CreateMainGUI()
 	showPage(PageTools)
 	TabBtn1.MouseButton1Click:Connect(function() showPage(PageTools) end)
 	TabBtn2.MouseButton1Click:Connect(function() showPage(PageScripts) end)
+
+	return ScreenGui
 end
 
--- Toggle Button
-local ToggleButton = Instance.new("TextButton")
+-- Toggle GUI (must be in its own ScreenGui so toggle always visible)
+local ToggleScreenGui = Instance.new("ScreenGui", PlayerGui)
+ToggleScreenGui.Name = "CY1_TOGGLE"
+ToggleScreenGui.ResetOnSpawn = false
+
+local ToggleButton = Instance.new("TextButton", ToggleScreenGui)
 ToggleButton.Size = UDim2.new(0, 40, 0, 40)
 ToggleButton.Position = UDim2.new(0, 10, 0.5, -20)
 ToggleButton.Text = "💢"
@@ -191,20 +205,35 @@ ToggleButton.Font = Enum.Font.GothamBold
 ToggleButton.TextSize = 22
 ToggleButton.TextColor3 = Color3.new(1, 1, 1)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+ToggleButton.BackgroundTransparency = 0
 ToggleButton.BorderSizePixel = 0
+Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(0, 10)
 ToggleButton.Active = true
 ToggleButton.Draggable = true
-Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(0, 10)
-ToggleButton.Parent = player:WaitForChild("PlayerGui")
 
-local guiExists = false
+-- create main GUI initially
+local mainGuiInstance = CreateMainGUI()
+local isOpen = true
+
+-- toggle behavior: destroy / recreate
 ToggleButton.MouseButton1Click:Connect(function()
-	if guiExists then
-		local oldGui = player.PlayerGui:FindFirstChild("CY1_GUI")
-		if oldGui then oldGui:Destroy() end
-		guiExists = false
+	if isOpen then
+		local old = PlayerGui:FindFirstChild("CY1_GUI")
+		if old then
+			-- optional fade out before destroy
+			for _, frame in ipairs(old:GetDescendants()) do
+				if frame:IsA("Frame") then
+					pcall(function() TweenService:Create(frame, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play() end)
+				end
+			end
+			task.wait(0.18)
+			old:Destroy()
+		end
+		TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundTransparency = 0.6}):Play()
+		isOpen = false
 	else
-		CreateMainGUI()
-		guiExists = true
+		mainGuiInstance = CreateMainGUI()
+		TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
+		isOpen = true
 	end
 end)
