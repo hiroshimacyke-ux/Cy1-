@@ -1,297 +1,250 @@
---// Services
-local TweenService = game:GetService("TweenService")
+-- ✅ Prevent duplicates when auto-executed
+if getgenv().CY1_GUI_LOADED then return end
+getgenv().CY1_GUI_LOADED = true
+
 local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-
---// ScreenGui Setup
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "CY1_GUI"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.IgnoreGuiInset = true
-ScreenGui.Parent = Player:WaitForChild("PlayerGui")
-
---// Loader Frame
-local LoaderFrame = Instance.new("Frame")
-LoaderFrame.Size = UDim2.new(1, 0, 1, 0)
-LoaderFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-LoaderFrame.BorderSizePixel = 0
-LoaderFrame.Parent = ScreenGui
-
---// Loader Label
-local LoaderLabel = Instance.new("TextLabel")
-LoaderLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-LoaderLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
-LoaderLabel.Size = UDim2.new(0, 250, 0, 50)
-LoaderLabel.BackgroundTransparency = 1
-LoaderLabel.Text = "💢 CY1 Loader"
-LoaderLabel.Font = Enum.Font.GothamBold
-LoaderLabel.TextSize = 32
-LoaderLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
-LoaderLabel.Parent = LoaderFrame
-
---// Animated Dots
-local Dots = Instance.new("TextLabel")
-Dots.AnchorPoint = Vector2.new(0.5, 0)
-Dots.Position = UDim2.new(0.5, 0, 0.55, 0)
-Dots.Size = UDim2.new(0, 200, 0, 30)
-Dots.BackgroundTransparency = 1
-Dots.Text = ""
-Dots.Font = Enum.Font.Gotham
-Dots.TextSize = 24
-Dots.TextColor3 = Color3.fromRGB(0, 200, 255)
-Dots.Parent = LoaderFrame
-
---// Animate dots
-task.spawn(function()
-	while LoaderFrame.Parent do
-		for i = 1, 3 do
-			Dots.Text = string.rep(".", i)
-			task.wait(0.4)
-		end
-	end
-end)
-
---// MainFrame (hidden until loader fades out)
-local MainFrame = Instance.new("Frame")
-MainFrame.AnchorPoint = Vector2.new(1, 0)
-MainFrame.Position = UDim2.new(1.2, -260, 0, -30)
-MainFrame.Size = UDim2.new(0, 250, 0, 350)
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-MainFrame.BorderColor3 = Color3.fromRGB(0, 200, 255)
-MainFrame.BorderSizePixel = 2
-MainFrame.Visible = false
-MainFrame.Parent = ScreenGui
-
-local MainCorner = Instance.new("UICorner", MainFrame)
-MainCorner.CornerRadius = UDim.new(0, 10)
-
---// Fade-out transition
-task.wait(2.5)
-TweenService:Create(LoaderFrame, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
-TweenService:Create(LoaderLabel, TweenInfo.new(1), {TextTransparency = 1}):Play()
-TweenService:Create(Dots, TweenInfo.new(1), {TextTransparency = 1}):Play()
-
-task.wait(1)
-LoaderFrame:Destroy()
-
---// Reveal GUI
-MainFrame.Visible = true
-TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(1, -260, 0, -30)}):Play()--// 💢 CY1 GUI - Cyan Themed (Part B)
---// Tabs, buttons, toggle button
-
+local TeleportService = game:GetService("TeleportService")
 local TweenService = game:GetService("TweenService")
+local player, mouse = Players.LocalPlayer, Players.LocalPlayer:GetMouse()
 
---// Title
-local Title = Instance.new("TextLabel")
-Title.Parent = MainFrame
-Title.Size = UDim2.new(1,0,0,40)
-Title.BackgroundColor3 = Color3.fromRGB(35,35,35)
-Title.Text = "💢 CY1 GUI"
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 20
-Title.TextColor3 = Color3.fromRGB(0,200,255)
-Instance.new("UICorner", Title).CornerRadius = UDim.new(0,10)
+-- █ Loader Screen
+local LoadingGui = Instance.new("ScreenGui")
+LoadingGui.Name = "LoadingScreen"
+LoadingGui.ResetOnSpawn = false
+LoadingGui.IgnoreGuiInset = true
+LoadingGui.Parent = player:WaitForChild("PlayerGui")
 
---// Tabs Container
-local TabsFrame = Instance.new("Frame")
-TabsFrame.Parent = MainFrame
-TabsFrame.Position = UDim2.new(0,0,0,45)
-TabsFrame.Size = UDim2.new(1,0,0,35)
-TabsFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-TabsFrame.BorderSizePixel = 0
+local LoadingFrame = Instance.new("Frame", LoadingGui)
+LoadingFrame.Size = UDim2.new(1,0,1,0)
+LoadingFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
+LoadingFrame.BackgroundTransparency = 1
 
-local UIListLayout = Instance.new("UIListLayout", TabsFrame)
-UIListLayout.FillDirection = Enum.FillDirection.Horizontal
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+local LoadingText = Instance.new("TextLabel", LoadingFrame)
+LoadingText.Size = UDim2.new(0,400,0,60)
+LoadingText.Position = UDim2.new(0.5,0,0.5,0)
+LoadingText.AnchorPoint = Vector2.new(0.5,0.5)
+LoadingText.BackgroundTransparency = 1
+LoadingText.TextTransparency = 1
+LoadingText.TextColor3 = Color3.fromRGB(0,200,255)
+LoadingText.Font = Enum.Font.GothamSemibold
+LoadingText.TextSize = 36
+LoadingText.Text = "💢 Welcome, " .. player.Name
 
---// Tab creation function
-local function createTab(name)
-	local TabButton = Instance.new("TextButton")
-	TabButton.Size = UDim2.new(0.5,0,1,0)
-	TabButton.Text = name
-	TabButton.Font = Enum.Font.GothamBold
-	TabButton.TextSize = 16
-	TabButton.TextColor3 = Color3.fromRGB(255,255,255)
-	TabButton.BackgroundColor3 = Color3.fromRGB(30,30,30)
-	TabButton.Parent = TabsFrame
+-- intro tween
+TweenService:Create(LoadingFrame, TweenInfo.new(0.8), {BackgroundTransparency = 0.4}):Play()
+TweenService:Create(LoadingText, TweenInfo.new(0.8), {TextTransparency = 0}):Play()
 
-	local underline = Instance.new("Frame")
-	underline.Size = UDim2.new(1,0,0,2)
-	underline.Position = UDim2.new(0,0,1,-2)
-	underline.BackgroundColor3 = Color3.fromRGB(0,200,255)
-	underline.Visible = false
-	underline.Parent = TabButton
+-- animated dots
+task.spawn(function()
+	local dots = ""
+	while LoadingGui.Parent do
+		dots = dots == "..." and "" or dots .. "."
+		LoadingText.Text = "💢 Welcome, " .. player.Name .. dots
+		task.wait(0.5)
+	end
+end)
 
-	TabButton.MouseEnter:Connect(function()
-		if not underline.Visible then
-			TweenService:Create(TabButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40,40,40)}):Play()
+-- fade out after 5s
+task.delay(5, function()
+	local fadeFrame = TweenService:Create(LoadingFrame, TweenInfo.new(0.6), {BackgroundTransparency = 1})
+	local fadeText = TweenService:Create(LoadingText, TweenInfo.new(0.6), {TextTransparency = 1})
+	fadeFrame:Play(); fadeText:Play()
+	fadeFrame.Completed:Wait()
+	LoadingGui:Destroy()
+end)
+
+-- █ Main GUI
+task.delay(5, function()
+	local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+	ScreenGui.Name, ScreenGui.ResetOnSpawn = "CY1_GUI", false
+
+	local function showConfirmation(msg, callback)
+		local f = Instance.new("Frame", ScreenGui)
+		f.Size, f.Position, f.BackgroundColor3 = UDim2.new(0,200,0,110), UDim2.new(0.5,-100,0.5,-55), Color3.fromRGB(30,30,30)
+		f.BorderColor3, f.BorderSizePixel, f.ZIndex = Color3.fromRGB(0,200,255), 2, 1000
+		Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
+
+		local t = Instance.new("TextLabel", f)
+		t.Size, t.Position = UDim2.new(1,-20,0,40), UDim2.new(0,10,0,10)
+		t.BackgroundTransparency, t.Text, t.TextSize = 1, msg, 14
+		t.TextColor3, t.Font, t.ZIndex = Color3.fromRGB(255,255,255), Enum.Font.GothamSemibold, 1001
+		t.TextWrapped = true
+
+		local function createBtn(text, pos, color, cb)
+			local b = Instance.new("TextButton", f)
+			b.Size, b.Position = UDim2.new(0.4,-5,0,30), pos
+			b.Text, b.BackgroundColor3, b.TextColor3 = text, color, Color3.new(1,1,1)
+			b.Font, b.TextSize, b.ZIndex = Enum.Font.GothamSemibold, 14, 1001
+			Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+			b.MouseEnter:Connect(function() TweenService:Create(b, TweenInfo.new(0.2), {BackgroundColor3 = color:Lerp(Color3.new(1,1,1),0.2)}):Play() end)
+			b.MouseLeave:Connect(function() TweenService:Create(b, TweenInfo.new(0.2), {BackgroundColor3 = color}):Play() end)
+			b.MouseButton1Click:Connect(cb)
+		end
+
+		createBtn("Yes", UDim2.new(0.05,0,1,-40), Color3.fromRGB(0,170,255), function() f:Destroy() callback() end)
+		createBtn("No", UDim2.new(0.55,0,1,-40), Color3.fromRGB(100,100,100), function() f:Destroy() end)
+	end
+
+	-- main frame
+	local MainFrame = Instance.new("Frame", ScreenGui)
+	MainFrame.Size, MainFrame.Position = UDim2.new(0,270,0,190), UDim2.new(1,-270,0,-30)
+	MainFrame.BackgroundColor3, MainFrame.BackgroundTransparency = Color3.fromRGB(20,20,20), 0.1
+	MainFrame.BorderColor3, MainFrame.BorderSizePixel = Color3.fromRGB(0,200,255), 1
+	Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
+	MainFrame.Active = true
+	MainFrame.Draggable = true
+
+	-- title
+	local TitleBar = Instance.new("TextLabel", MainFrame)
+	TitleBar.Size = UDim2.new(1,0,0,30)
+	TitleBar.Text = "💢 CY1 GUI"
+	TitleBar.Font = Enum.Font.GothamSemibold
+	TitleBar.TextSize = 16
+	TitleBar.TextColor3 = Color3.fromRGB(0,200,255)
+	TitleBar.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	TitleBar.BorderColor3 = Color3.fromRGB(0,200,255)
+	Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 8)
+
+	-- tabs
+	local TabContainer = Instance.new("Frame", MainFrame)
+	TabContainer.Size, TabContainer.Position = UDim2.new(1,-10,0,30), UDim2.new(0,5,0,30)
+	TabContainer.BackgroundTransparency = 1
+
+	local function makeTab(text, pos)
+		local b = Instance.new("TextButton", TabContainer)
+		b.Size, b.Position = UDim2.new(0.48,0,1,0), pos
+		b.Text, b.Font, b.TextSize = text, Enum.Font.GothamSemibold, 14
+		b.TextColor3 = Color3.new(1,1,1)
+		b.BackgroundColor3 = Color3.fromRGB(35,35,35)
+		b.BorderColor3 = Color3.fromRGB(0,200,255)
+		b.BorderSizePixel = 1
+		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+		b.MouseEnter:Connect(function() TweenService:Create(b, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(0,200,255)}):Play() end)
+		b.MouseLeave:Connect(function() TweenService:Create(b, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35,35,35)}):Play() end)
+		return b
+	end
+
+	local TabBtn1 = makeTab("Tools", UDim2.new(0,0,0,0))
+	local TabBtn2 = makeTab("Scripts", UDim2.new(0.52,0,0,0))
+
+	-- content container
+	local ContentContainer = Instance.new("Frame", MainFrame)
+	ContentContainer.Size, ContentContainer.Position = UDim2.new(1,0,1,-60), UDim2.new(0,0,0,60)
+	ContentContainer.BackgroundTransparency = 1
+
+	local function createPage(name)
+		local page = Instance.new("ScrollingFrame", ContentContainer)
+		page.Name, page.Size = name, UDim2.new(1,0,1,0)
+		page.BackgroundTransparency, page.ScrollBarThickness = 1, 2
+		local layout = Instance.new("UIListLayout", page)
+		layout.Padding = UDim.new(0, 8)
+		layout.SortOrder = Enum.SortOrder.LayoutOrder
+		local pad = Instance.new("UIPadding", page)
+		pad.PaddingTop = UDim.new(0,10)
+		layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+			page.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 12)
+		end)
+		return page
+	end
+
+	local PageTools = createPage("Tools")
+	local PageScripts = createPage("Scripts")
+
+	local function createCyanButton(parent, name, text, callback)
+		local b = Instance.new("TextButton", parent)
+		b.Name, b.Text = name, text
+		b.Size = UDim2.new(1,-10,0,26)
+		b.BackgroundColor3 = Color3.fromRGB(0,200,255)
+		b.TextColor3 = Color3.new(1,1,1)
+		b.Font, b.TextSize = Enum.Font.GothamSemibold, 13
+		b.BorderSizePixel = 0
+		b.AutoButtonColor = false
+		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+		b.MouseEnter:Connect(function() TweenService:Create(b, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(0,230,255)}):Play() end)
+		b.MouseLeave:Connect(function() TweenService:Create(b, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(0,200,255)}):Play() end)
+		if callback then b.MouseButton1Click:Connect(callback) end
+		return b
+	end
+
+	-- Populate Tools
+	createCyanButton(PageTools,"ServerHop","Server Hop 🔁",function()
+		showConfirmation("Hop to another server?", function()
+			local HttpService = game:GetService("HttpService")
+			local data = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
+			for _,s in pairs(data.data or {}) do
+				if s.id ~= game.JobId and s.playing < s.maxPlayers then
+					TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id, player) return
+				end
+			end
+		end)
+	end)
+
+	createCyanButton(PageTools,"Rejoin","Rejoin Server 🔄",function()
+		showConfirmation("Rejoin this server?", function()
+			TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+		end)
+	end)
+
+	createCyanButton(PageTools,"IY","Infinite Yield 💻",function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+	end)
+
+	createCyanButton(PageTools,"TPTool","TP Tool 🧭",function()
+		local tool = Instance.new("Tool", player.Backpack)
+		tool.RequiresHandle, tool.Name = false, "Tp tool (Click to TP)"
+		tool.Activated:Connect(function()
+			local pos = mouse.Hit + Vector3.new(0,2.5,0)
+			if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+				player.Character.HumanoidRootPart.CFrame = CFrame.new(pos.X, pos.Y, pos.Z)
+			end
+		end)
+	end)
+
+	-- Populate Scripts
+	createCyanButton(PageScripts,"BringFling","NDS - Black Hole 🌑",function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/BringFlingPlayers"))()
+	end)
+
+	createCyanButton(PageScripts,"Disaster","NDS - Disaster alert 🌧️",function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/EnesXVC/NaturalDisasterSurvival/main/Detect-Disasters"))()
+	end)
+	
+	-- Tab switch logic
+	local function showPage(page)
+		for _,child in ipairs(ContentContainer:GetChildren()) do
+			if child:IsA("ScrollingFrame") then child.Visible = (child == page) end
+		end
+		TabBtn1.BackgroundColor3 = (page==PageTools) and Color3.fromRGB(0,200,255) or Color3.fromRGB(35,35,35)
+		TabBtn2.BackgroundColor3 = (page==PageScripts) and Color3.fromRGB(0,200,255) or Color3.fromRGB(35,35,35)
+	end
+	PageTools.Visible=true PageScripts.Visible=false
+	showPage(PageTools)
+	TabBtn1.MouseButton1Click:Connect(function() showPage(PageTools) end)
+	TabBtn2.MouseButton1Click:Connect(function() showPage(PageScripts) end)
+
+	-- Toggle Button
+	local ToggleButton = Instance.new("TextButton", ScreenGui)
+	ToggleButton.Size = UDim2.new(0,40,0,40)
+	ToggleButton.Position = UDim2.new(0,10,0.5,-20)
+	ToggleButton.Text = "💢"
+	ToggleButton.Font = Enum.Font.GothamBold
+	ToggleButton.TextSize = 22
+	ToggleButton.TextColor3 = Color3.new(1,1,1)
+	ToggleButton.BackgroundColor3 = Color3.fromRGB(0,200,255)
+	ToggleButton.BorderSizePixel = 0
+	Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(0,10)
+	ToggleButton.Active=true ToggleButton.Draggable=true
+
+	local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	local guiVisible = true
+	ToggleButton.MouseButton1Click:Connect(function()
+		guiVisible = not guiVisible
+		if guiVisible then
+			TweenService:Create(MainFrame, tweenInfo, {Position=UDim2.new(1,-270,0,-30)}):Play()
+			TweenService:Create(ToggleButton, tweenInfo, {BackgroundTransparency=0}):Play()
+		else
+			TweenService:Create(MainFrame, tweenInfo, {Position=UDim2.new(1.2,-270,0,-30)}):Play()
+			TweenService:Create(ToggleButton, tweenInfo, {BackgroundTransparency=0.4}):Play()
 		end
 	end)
-	TabButton.MouseLeave:Connect(function()
-		if not underline.Visible then
-			TweenService:Create(TabButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30,30,30)}):Play()
-		end
-	end)
-
-	return TabButton, underline
-end
-
---// Create Tabs
-local ScriptsTab, ScriptsUnderline = createTab("Scripts")
-local ToolsTab, ToolsUnderline = createTab("Tools")
-
---// Content frames
-local ScriptsFrame = Instance.new("Frame")
-ScriptsFrame.Parent = MainFrame
-ScriptsFrame.Position = UDim2.new(0,0,0,80)
-ScriptsFrame.Size = UDim2.new(1,0,1,-80)
-ScriptsFrame.BackgroundTransparency = 1
-
-local ToolsFrame = ScriptsFrame:Clone()
-ToolsFrame.Parent = MainFrame
-ToolsFrame.Visible = false
-
---// Tab switching
-local function switchTab(tab)
-	if tab == "Scripts" then
-		ScriptsFrame.Visible = true
-		ToolsFrame.Visible = false
-		ScriptsUnderline.Visible = true
-		ToolsUnderline.Visible = false
-	elseif tab == "Tools" then
-		ScriptsFrame.Visible = false
-		ToolsFrame.Visible = true
-		ScriptsUnderline.Visible = false
-		ToolsUnderline.Visible = true
-	end
-end
-
-ScriptsTab.MouseButton1Click:Connect(function()
-	switchTab("Scripts")
-end)
-ToolsTab.MouseButton1Click:Connect(function()
-	switchTab("Tools")
-end)
-switchTab("Scripts")
-
---// Button creation function
-local function createButton(parent, text, callback)
-	local Button = Instance.new("TextButton")
-	Button.Size = UDim2.new(1,-20,0,35)
-	Button.Position = UDim2.new(0,10,0,0)
-	Button.BackgroundColor3 = Color3.fromRGB(35,35,35)
-	Button.TextColor3 = Color3.fromRGB(255,255,255)
-	Button.Text = text
-	Button.Font = Enum.Font.GothamSemibold
-	Button.TextSize = 16
-	Button.Parent = parent
-	Instance.new("UICorner", Button).CornerRadius = UDim.new(0,8)
-
-	Button.MouseEnter:Connect(function()
-		TweenService:Create(Button, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(0,200,255)}):Play()
-	end)
-	Button.MouseLeave:Connect(function()
-		TweenService:Create(Button, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35,35,35)}):Play()
-	end)
-	Button.MouseButton1Click:Connect(callback)
-end
-
---// Example Buttons
-createButton(ScriptsFrame, "🌀 Infinite Yield", function()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
-end)
-createButton(ScriptsFrame, "🌐 Server Hop", function()
-	game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId)
-end)
-createButton(ScriptsFrame, "🧭 TP Tool", function()
-	local tool = Instance.new("Tool")
-	tool.RequiresHandle = false
-	tool.Name = "TP Tool"
-	tool.Activated:Connect(function()
-		local mouse = Player:GetMouse()
-		Player.Character:MoveTo(mouse.Hit.p)
-	end)
-	tool.Parent = Player.Backpack
-end)
-
---// Floating Toggle Button
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Parent = ScreenGui
-ToggleButton.Size = UDim2.new(0,40,0,40)
-ToggleButton.Position = UDim2.new(0,10,0.5,-20)
-ToggleButton.Text = "💢"
-ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.TextSize = 22
-ToggleButton.TextColor3 = Color3.new(1,1,1)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
-ToggleButton.BorderColor3 = Color3.fromRGB(0,200,255)
-ToggleButton.BorderSizePixel = 2
-Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(0,10)
-
-local guiVisible = true
-local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
-ToggleButton.MouseButton1Click:Connect(function()
-	guiVisible = not guiVisible
-	if guiVisible then
-		TweenService:Create(MainFrame, tweenInfo, {Position = UDim2.new(1,-260,0,-30)}):Play()
-	else
-		TweenService:Create(MainFrame, tweenInfo, {Position = UDim2.new(1.2,-260,0,-30)}):Play()
-	end
-end)
-
--- Add padding to buttons inside each page
-for _, frame in ipairs({ScriptsFrame, ToolsFrame}) do
-	local layout = Instance.new("UIListLayout", frame)
-	layout.Padding = UDim.new(0, 8)
-	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	layout.SortOrder = Enum.SortOrder.LayoutOrder
-
-	local padding = Instance.new("UIPadding", frame)
-	padding.PaddingTop = UDim.new(0, 10)
-	padding.PaddingLeft = UDim.new(0, 10)
-	padding.PaddingRight = UDim.new(0, 10)
-end
-
--- Create subtle drop-shadow behind main frame
-local Shadow = Instance.new("ImageLabel", MainFrame)
-Shadow.ZIndex = 0
-Shadow.BackgroundTransparency = 1
-Shadow.Image = "rbxassetid://1316045217"
-Shadow.ImageTransparency = 0.8
-Shadow.ScaleType = Enum.ScaleType.Slice
-Shadow.SliceCenter = Rect.new(10, 10, 118, 118)
-Shadow.Size = UDim2.new(1, 30, 1, 30)
-Shadow.Position = UDim2.new(0, -15, 0, -15)
-Shadow.ImageColor3 = Color3.fromRGB(0, 200, 255)
-
--- Add smooth appear animation for main frame
-MainFrame.Position = UDim2.new(1.2, -300, 0.5, -110)
-TweenService:Create(MainFrame, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-	{Position = UDim2.new(1, -300, 0.5, -110)}):Play()
-
--- Toggle animation improvement
-local guiVisible = true
-local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-ToggleButton.MouseButton1Click:Connect(function()
-	guiVisible = not guiVisible
-	if guiVisible then
-		TweenService:Create(MainFrame, tweenInfo, {Position = UDim2.new(1, -300, 0.5, -110)}):Play()
-		TweenService:Create(ToggleButton, tweenInfo, {BackgroundColor3 = Color3.fromRGB(25,25,25)}):Play()
-	else
-		TweenService:Create(MainFrame, tweenInfo, {Position = UDim2.new(1.2, -300, 0.5, -110)}):Play()
-		TweenService:Create(ToggleButton, tweenInfo, {BackgroundColor3 = Color3.fromRGB(15,15,15)}):Play()
-	end
-end)
-
--- Optional hover glow on toggle button
-ToggleButton.MouseEnter:Connect(function()
-	if guiVisible then
-		TweenService:Create(ToggleButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35,35,35)}):Play()
-	end
-end)
-ToggleButton.MouseLeave:Connect(function()
-	if guiVisible then
-		TweenService:Create(ToggleButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(25,25,25)}):Play()
-	end
 end)
