@@ -25,7 +25,7 @@ LoadingText.Position = UDim2.new(0.5,0,0.5,0)
 LoadingText.AnchorPoint = Vector2.new(0.5,0.5)
 LoadingText.BackgroundTransparency = 1
 LoadingText.TextTransparency = 1
-LoadingText.TextColor3 = Color3.fromRGB(255,255,255)
+LoadingText.TextColor3 = Color3.fromRGB(0,200,255)
 LoadingText.Font = Enum.Font.GothamSemibold
 LoadingText.TextSize = 36
 LoadingText.Text = "💢 Welcome, " .. player.Name
@@ -58,17 +58,16 @@ task.delay(5, function()
 	local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 	ScreenGui.Name, ScreenGui.ResetOnSpawn = "CY1_GUI", false
 
-	-- confirmation popup
 	local function showConfirmation(msg, callback)
 		local f = Instance.new("Frame", ScreenGui)
-		f.Size, f.Position, f.BackgroundColor3 = UDim2.new(0,180,0,100), UDim2.new(0.5,-90,0.5,-50), Color3.fromRGB(30,30,30)
-		f.BorderColor3, f.BorderSizePixel, f.ZIndex = Color3.fromRGB(255,0,0), 2, 1000
+		f.Size, f.Position, f.BackgroundColor3 = UDim2.new(0,200,0,110), UDim2.new(0.5,-100,0.5,-55), Color3.fromRGB(30,30,30)
+		f.BorderColor3, f.BorderSizePixel, f.ZIndex = Color3.fromRGB(0,200,255), 2, 1000
 		Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
 
 		local t = Instance.new("TextLabel", f)
 		t.Size, t.Position = UDim2.new(1,-20,0,40), UDim2.new(0,10,0,10)
 		t.BackgroundTransparency, t.Text, t.TextSize = 1, msg, 14
-		t.TextColor3, t.Font, t.ZIndex = Color3.new(1,1,1), Enum.Font.GothamSemibold, 1001
+		t.TextColor3, t.Font, t.ZIndex = Color3.fromRGB(255,255,255), Enum.Font.GothamSemibold, 1001
 		t.TextWrapped = true
 
 		local function createBtn(text, pos, color, cb)
@@ -77,27 +76,33 @@ task.delay(5, function()
 			b.Text, b.BackgroundColor3, b.TextColor3 = text, color, Color3.new(1,1,1)
 			b.Font, b.TextSize, b.ZIndex = Enum.Font.GothamSemibold, 14, 1001
 			Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+			b.MouseEnter:Connect(function() TweenService:Create(b, TweenInfo.new(0.2), {BackgroundColor3 = color:Lerp(Color3.new(1,1,1),0.2)}):Play() end)
+			b.MouseLeave:Connect(function() TweenService:Create(b, TweenInfo.new(0.2), {BackgroundColor3 = color}):Play() end)
 			b.MouseButton1Click:Connect(cb)
 		end
 
-		createBtn("Yes", UDim2.new(0.05,0,1,-40), Color3.fromRGB(0,170,0), function() f:Destroy() callback() end)
-		createBtn("No", UDim2.new(0.55,0,1,-40), Color3.fromRGB(170,0,0), function() f:Destroy() end)
+		createBtn("Yes", UDim2.new(0.05,0,1,-40), Color3.fromRGB(0,170,255), function() f:Destroy() callback() end)
+		createBtn("No", UDim2.new(0.55,0,1,-40), Color3.fromRGB(100,100,100), function() f:Destroy() end)
 	end
 
 	-- main frame
 	local MainFrame = Instance.new("Frame", ScreenGui)
-	MainFrame.Size, MainFrame.Position = UDim2.new(0,260,0,180), UDim2.new(1,-260,0,-30)
-	MainFrame.BackgroundColor3, MainFrame.BackgroundTransparency = Color3.fromRGB(25,25,25), 0.3
-	MainFrame.BorderColor3, MainFrame.BorderSizePixel = Color3.fromRGB(255,0,0), 2
+	MainFrame.Size, MainFrame.Position = UDim2.new(0,270,0,190), UDim2.new(1,-270,0,-30)
+	MainFrame.BackgroundColor3, MainFrame.BackgroundTransparency = Color3.fromRGB(20,20,20), 0.1
+	MainFrame.BorderColor3, MainFrame.BorderSizePixel = Color3.fromRGB(0,200,255), 1
 	Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
+	MainFrame.Active = true
+	MainFrame.Draggable = true
 
-	-- title bar
+	-- title
 	local TitleBar = Instance.new("TextLabel", MainFrame)
-	TitleBar.Size, TitleBar.Position = UDim2.new(1,-60,0,30), UDim2.new(0,0,0,0)
-	TitleBar.Text, TitleBar.TextSize, TitleBar.TextColor3 = "💢 CY1 GUI", 16, Color3.new(1,1,1)
-	TitleBar.Font, TitleBar.TextXAlignment = Enum.Font.GothamSemibold, Enum.TextXAlignment.Left
-	TitleBar.BackgroundColor3, TitleBar.BackgroundTransparency = Color3.fromRGB(35,35,35), 0.3
-	TitleBar.BorderColor3, TitleBar.BorderSizePixel = Color3.fromRGB(255,0,0), 1
+	TitleBar.Size = UDim2.new(1,0,0,30)
+	TitleBar.Text = "💢 CY1 GUI"
+	TitleBar.Font = Enum.Font.GothamSemibold
+	TitleBar.TextSize = 16
+	TitleBar.TextColor3 = Color3.fromRGB(0,200,255)
+	TitleBar.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	TitleBar.BorderColor3 = Color3.fromRGB(0,200,255)
 	Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 8)
 
 	-- tabs
@@ -105,83 +110,64 @@ task.delay(5, function()
 	TabContainer.Size, TabContainer.Position = UDim2.new(1,-10,0,30), UDim2.new(0,5,0,30)
 	TabContainer.BackgroundTransparency = 1
 
-	local function makeSmallBtn(text, pos)
+	local function makeTab(text, pos)
 		local b = Instance.new("TextButton", TabContainer)
 		b.Size, b.Position = UDim2.new(0.48,0,1,0), pos
 		b.Text, b.Font, b.TextSize = text, Enum.Font.GothamSemibold, 14
 		b.TextColor3 = Color3.new(1,1,1)
 		b.BackgroundColor3 = Color3.fromRGB(35,35,35)
-		b.BorderColor3, b.BorderSizePixel = Color3.fromRGB(255,0,0), 1
+		b.BorderColor3 = Color3.fromRGB(0,200,255)
+		b.BorderSizePixel = 1
 		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+		b.MouseEnter:Connect(function() TweenService:Create(b, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(0,200,255)}):Play() end)
+		b.MouseLeave:Connect(function() TweenService:Create(b, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35,35,35)}):Play() end)
 		return b
 	end
 
-	local TabBtn1 = makeSmallBtn("Tools", UDim2.new(0,0,0,0))
-	local TabBtn2 = makeSmallBtn("Scripts", UDim2.new(0.52,0,0,0))
-
-	-- minimize & close
-	local function makeIconBtn(icon, pos, callback)
-		local b = Instance.new("TextButton", MainFrame)
-		b.Size, b.Position, b.Text = UDim2.new(0,30,0,30), pos, icon
-		b.Font, b.TextSize, b.TextColor3 = Enum.Font.GothamSemibold, 18, Color3.new(1,1,1)
-		b.BackgroundColor3, b.BackgroundTransparency = Color3.fromRGB(35,35,35), 0.3
-		b.BorderColor3, b.BorderSizePixel = Color3.fromRGB(255,0,0), 1
-		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
-		if callback then b.MouseButton1Click:Connect(callback) end
-		return b
-	end
-
-	local MinimizeButton = makeIconBtn("🔵", UDim2.new(1,-60,0,0))
-	local CloseButton = makeIconBtn("🔴", UDim2.new(1,-30,0,0), function()
-		showConfirmation("Are you sure you want to close it?", function() ScreenGui:Destroy() end)
-	end)
+	local TabBtn1 = makeTab("Tools", UDim2.new(0,0,0,0))
+	local TabBtn2 = makeTab("Scripts", UDim2.new(0.52,0,0,0))
 
 	-- content container
 	local ContentContainer = Instance.new("Frame", MainFrame)
 	ContentContainer.Size, ContentContainer.Position = UDim2.new(1,0,1,-60), UDim2.new(0,0,0,60)
 	ContentContainer.BackgroundTransparency = 1
 
-	local function createScrollPage(name)
+	local function createPage(name)
 		local page = Instance.new("ScrollingFrame", ContentContainer)
-		page.Name = name
-		page.Size = UDim2.new(1, 0, 1, 0)
-		page.BackgroundTransparency = 1
-		page.ScrollBarThickness = 1
-		page.CanvasSize = UDim2.new(0,0,0,0)
-
+		page.Name, page.Size = name, UDim2.new(1,0,1,0)
+		page.BackgroundTransparency, page.ScrollBarThickness = 1, 2
 		local layout = Instance.new("UIListLayout", page)
 		layout.Padding = UDim.new(0, 8)
 		layout.SortOrder = Enum.SortOrder.LayoutOrder
-
-		local padding = Instance.new("UIPadding", page)
-		padding.PaddingTop = UDim.new(0, 10)
-
+		local pad = Instance.new("UIPadding", page)
+		pad.PaddingTop = UDim.new(0,10)
 		layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-			page.CanvasSize = UDim2.new(0,0,0, layout.AbsoluteContentSize.Y + 12)
+			page.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 12)
 		end)
-
 		return page
 	end
 
-	local PageTools = createScrollPage("Tools")
-	local PageScripts = createScrollPage("Scripts")
+	local PageTools = createPage("Tools")
+	local PageScripts = createPage("Scripts")
 
-	-- button helper
-	local function createRedButton(parent, name, text, callback)
+	local function createCyanButton(parent, name, text, callback)
 		local b = Instance.new("TextButton", parent)
 		b.Name, b.Text = name, text
-		b.Size = UDim2.new(1, -10, 0, 24)
-		b.BackgroundColor3 = Color3.fromRGB(200,50,50)
-		b.BackgroundTransparency = 0.3
-		b.TextColor3, b.Font, b.TextSize = Color3.new(1,1,1), Enum.Font.GothamSemibold, 13
-		b.BorderSizePixel, b.BorderColor3 = 3, Color3.fromRGB(255,0,0)
+		b.Size = UDim2.new(1,-10,0,26)
+		b.BackgroundColor3 = Color3.fromRGB(0,200,255)
+		b.TextColor3 = Color3.new(1,1,1)
+		b.Font, b.TextSize = Enum.Font.GothamSemibold, 13
+		b.BorderSizePixel = 0
+		b.AutoButtonColor = false
 		Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+		b.MouseEnter:Connect(function() TweenService:Create(b, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(0,230,255)}):Play() end)
+		b.MouseLeave:Connect(function() TweenService:Create(b, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(0,200,255)}):Play() end)
 		if callback then b.MouseButton1Click:Connect(callback) end
 		return b
 	end
 
-	-- populate PageTools
-	createRedButton(PageTools, "ServerHop", "Server Hop 🔁", function()
+	-- Populate Tools
+	createCyanButton(PageTools,"ServerHop","Server Hop 🔁",function()
 		showConfirmation("Hop to another server?", function()
 			local HttpService = game:GetService("HttpService")
 			local data = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
@@ -193,19 +179,19 @@ task.delay(5, function()
 		end)
 	end)
 
-	createRedButton(PageTools, "RejoinButton", "Rejoin Server 🔄", function()
+	createCyanButton(PageTools,"Rejoin","Rejoin Server 🔄",function()
 		showConfirmation("Rejoin this server?", function()
 			TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
 		end)
 	end)
 
-	createRedButton(PageTools, "IYButton", "Infinite Yield 💻", function()
+	createCyanButton(PageTools,"IY","Infinite Yield 💻",function()
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
 	end)
 
-	createRedButton(PageTools, "TpToolButton", "TP Tool 🧭", function()
+	createCyanButton(PageTools,"TPTool","TP Tool 🧭",function()
 		local tool = Instance.new("Tool", player.Backpack)
-		tool.RequiresHandle, tool.Name = false, "Tp tool (Equip to Click TP)"
+		tool.RequiresHandle, tool.Name = false, "Tp tool (Click to TP)"
 		tool.Activated:Connect(function()
 			local pos = mouse.Hit + Vector3.new(0,2.5,0)
 			if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -214,71 +200,51 @@ task.delay(5, function()
 		end)
 	end)
 
-	-- populate PageScripts
-	createRedButton(PageScripts, "BringFling", "NDS - Black Hole 🌑", function()
+	-- Populate Scripts
+	createCyanButton(PageScripts,"BringFling","NDS - Black Hole 🌑",function()
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/BringFlingPlayers"))()
 	end)
 
-	createRedButton(PageScripts, "DisasterButton", "NDS - Disaster alert 🌧️", function()
+	createCyanButton(PageScripts,"Disaster","NDS - Disaster alert 🌧️",function()
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/EnesXVC/NaturalDisasterSurvival/main/Detect-Disasters"))()
 	end)
-
-	createRedButton(PageScripts, "GameLoaderButton", "Grow a garden 🌱", function()
-		repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer
-		local scripts = {
-			[126884695634066] = "https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/Garden/Garden-V1.lua",
-			[81440632616906]  = "https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/DigEarth/V1.lua",
-		}
-		local url = scripts[game.PlaceId]
-		if url then
-			loadstring(game:HttpGetAsync(url))()
-			loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/untitled.lua"))()
+	
+	-- Tab switch logic
+	local function showPage(page)
+		for _,child in ipairs(ContentContainer:GetChildren()) do
+			if child:IsA("ScrollingFrame") then child.Visible = (child == page) end
 		end
-	end)
-
-	createRedButton(PageScripts, "PhantasmTSB", "The strongest 👊", function()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/ATrainz/Phantasm/refs/heads/main/Games/TSB.lua"))()
-	end)
-
-	-- tab switching
-	local function showPage(pageToShow)
-		for _, child in ipairs(ContentContainer:GetChildren()) do
-			if child:IsA("ScrollingFrame") then
-				child.Visible = (child == pageToShow)
-			end
-		end
-		TabBtn1.BackgroundColor3 = (pageToShow == PageTools) and Color3.fromRGB(55,55,55) or Color3.fromRGB(35,35,35)
-		TabBtn2.BackgroundColor3 = (pageToShow == PageScripts) and Color3.fromRGB(55,55,55) or Color3.fromRGB(35,35,35)
+		TabBtn1.BackgroundColor3 = (page==PageTools) and Color3.fromRGB(0,200,255) or Color3.fromRGB(35,35,35)
+		TabBtn2.BackgroundColor3 = (page==PageScripts) and Color3.fromRGB(0,200,255) or Color3.fromRGB(35,35,35)
 	end
-
-	PageScripts.Visible = false
-	PageTools.Visible = true
+	PageTools.Visible=true PageScripts.Visible=false
 	showPage(PageTools)
-
 	TabBtn1.MouseButton1Click:Connect(function() showPage(PageTools) end)
 	TabBtn2.MouseButton1Click:Connect(function() showPage(PageScripts) end)
 
-	-- minimize logic
-	local minimized, originalSize, minimizedSize = false, UDim2.new(0,260,0,180), UDim2.new(0,250,0,30)
+	-- Toggle Button
+	local ToggleButton = Instance.new("TextButton", ScreenGui)
+	ToggleButton.Size = UDim2.new(0,40,0,40)
+	ToggleButton.Position = UDim2.new(0,10,0.5,-20)
+	ToggleButton.Text = "💢"
+	ToggleButton.Font = Enum.Font.GothamBold
+	ToggleButton.TextSize = 22
+	ToggleButton.TextColor3 = Color3.new(1,1,1)
+	ToggleButton.BackgroundColor3 = Color3.fromRGB(0,200,255)
+	ToggleButton.BorderSizePixel = 0
+	Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(0,10)
+	ToggleButton.Active=true ToggleButton.Draggable=true
+
 	local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
-	MainFrame.Active = true
-	MainFrame.Draggable = true
-
-	MinimizeButton.MouseButton1Click:Connect(function()
-		minimized = not minimized
-		TweenService:Create(MainFrame, tweenInfo, {Size = minimized and minimizedSize or originalSize}):Play()
-
-		if minimized then 
-			ContentContainer.Visible = false
-			TabContainer.Visible = false
-			MinimizeButton.Text = "⚫"
-		else 
-			task.delay(0.25, function()
-				ContentContainer.Visible = true
-				TabContainer.Visible = true
-			end)
-			MinimizeButton.Text = "🔵"
+	local guiVisible = true
+	ToggleButton.MouseButton1Click:Connect(function()
+		guiVisible = not guiVisible
+		if guiVisible then
+			TweenService:Create(MainFrame, tweenInfo, {Position=UDim2.new(1,-270,0,-30)}):Play()
+			TweenService:Create(ToggleButton, tweenInfo, {BackgroundTransparency=0}):Play()
+		else
+			TweenService:Create(MainFrame, tweenInfo, {Position=UDim2.new(1.2,-270,0,-30)}):Play()
+			TweenService:Create(ToggleButton, tweenInfo, {BackgroundTransparency=0.4}):Play()
 		end
 	end)
 end)
