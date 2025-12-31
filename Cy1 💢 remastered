@@ -1,4 +1,3 @@
--- ✅ Prevent duplicates when auto-executed
 if getgenv().CY1_GUI_LOADED then return end
 getgenv().CY1_GUI_LOADED = true
 
