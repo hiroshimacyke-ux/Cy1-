@@ -64,7 +64,7 @@ TweenService:Create(MainFrame, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.Easi
 -- █ Title
 local TitleBar = Instance.new("TextLabel", MainFrame)
 TitleBar.Size = UDim2.new(1,0,0,30)
-TitleBar.Text = "💢 CY1 GUI"
+TitleBar.Text = "💢 UZI GUI"
 TitleBar.Font = Enum.Font.GothamSemibold
 TitleBar.TextSize = 18
 TitleBar.TextColor3 = Color3.new(1,1,1)
@@ -136,16 +136,6 @@ local function createBlackButton(parent, name, text, callback)
 end
 
 -- █ TOOLS TAB
-local gameGuiHidden = false
-createBlackButton(PageTools,"HideGameUI","Hide Game GUI 🕶️",function()
-	gameGuiHidden = not gameGuiHidden
-	for _,gui in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
-		if gui ~= ScreenGui then
-			gui.Enabled = not gameGuiHidden
-		end
-	end
-end)
-
 createBlackButton(PageTools,"ServerHop","Server Hop 🔁",function()
 	showConfirmation("Hop to another server?", function()
 		local HttpService = game:GetService("HttpService")
@@ -178,15 +168,6 @@ createBlackButton(PageTools,"TPTool","TP Tool 🧭",function()
 			player.Character.HumanoidRootPart.CFrame = CFrame.new(pos.X, pos.Y, pos.Z)
 		end
 	end)
-end)
-
--- █ SCRIPTS TAB
-createBlackButton(PageScripts,"BringFling","NDS - Black Hole 🌑",function()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/BringFlingPlayers"))()
-end)
-
-createBlackButton(PageScripts,"Disaster","NDS - Disaster alert 🌧️",function()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/EnesXVC/NaturalDisasterSurvival/main/Detect-Disasters"))()
 end)
 
 -- █ Tab logic
